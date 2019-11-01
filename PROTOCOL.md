@@ -190,7 +190,10 @@ clients must follow.
 | `UPDATE_METADATA` | Update metadata on the server. The inner payload should be a key-value mapping of metadata |
 | `SEND`            | Send a payload to a single client that matches the routing query |
 | `BROADCAST`       | Send a payload to all clients that match the routing query |
-| `QUEUE`           | Add a payload to a message queue |
+| `QUEUE_MESSAGE`   | Add a payload to a message queue. Creates a new queue with default properties if needed |
+| `QUEUE_UPDATE`    | Create a new queue with potentially-non-default properties |
+| `QUEUE_DELETE`    | Deletes the specified queue |
+| `QUEUE_CLEAR`     | Clears but does **not** delete the specified queue |
 | `QUERY_NODES`     | Returns all nodes matching the given routing query. This is intended to help with debugging, and SHOULD NOT BE USED OTHERWISE |
 
 The inner payloads for these events are as follows:
@@ -250,6 +253,71 @@ When receiving:
 
 The main difference is the presence of the `target` field in the payload when
 sending a dispatch event. 
+
+### Queues
+
+신경 queues maintain all the metadata-based properties of message sending and 
+HTTP request proxying. Because of this, they support two kinds of use-case:
+in-order and out-of-order. An in-order queue is what it sounds like - queued
+messages will be sent in-order only, and if there is no client listening on the
+queue that matches the next message in the queue, it will never be sent.
+Out-of-order queues, on the other hand, can have messages pulled in any order.
+An example of this being useful would be for a job queue - one could queue jobs
+as messages to be sent to a client whose current time is greater than or equal
+to some timestamp, and then a client can update its own metadata with its
+current timestamp, and eventually the message will be dequeued. 
+
+Queue commands all follow roughly the same structure. The inner payload of the
+신경 payload is a map containing a `name` key that maps to the queue's name,
+and potentially other values (listed below).
+
+#### `QUEUE_MESSAGE`
+
+Appends a message to the named queue. If the queue does not exist, it will be
+created with default options. 
+
+Inner payload:
+```Javascript
+{
+  "name": "queue name goes here",
+  "target": "routing query goes here",
+  "nonce": "unique nonce",
+  // Properties for the QUEUE, not the message / envelope. If the queue already
+  // exists, this option does nothing. If the queue does not exist, it will be
+  // created with the options specified in this object.
+  // Queue properties are optional.
+  "props": {
+    "ordered": false
+  },
+  "payload": {
+    // Whatever data you want in the queued message goes here.
+    "data": "this message is queued!"
+  }
+}
+```
+
+#### `QUEUE_UPDATE`
+
+Updates the queue with the given name. If the queue does not exists, your
+client will receive an OP 3 Invalid.
+
+Inner payload:
+```Javascript
+{
+  "name": "queue name goes here",
+  "options": {
+    "ordered": false
+  }
+}
+```
+
+#### `QUEUE_DELETE`
+
+Deletes the named queue. Does not require any options.
+
+#### `QUEUE_CLEAR`
+
+Clears the named queue. Does not require any options.
 
 ### `QUERY_NODES`
 
