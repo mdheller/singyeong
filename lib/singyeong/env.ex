@@ -10,4 +10,5 @@ defmodule Singyeong.Env do
   def clustering, do: get_env "CLUSTERING"
   def cookie,     do: get_env "COOKIE"
   def redis_dsn,  do: get_env "REDIS_DSN"
+  def raft_zone,  do: get_env "RAFT_ZONE"
 end

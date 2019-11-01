@@ -190,6 +190,7 @@ clients must follow.
 | `UPDATE_METADATA` | Update metadata on the server. The inner payload should be a key-value mapping of metadata |
 | `SEND`            | Send a payload to a single client that matches the routing query |
 | `BROADCAST`       | Send a payload to all clients that match the routing query |
+| `QUEUE`           | Add a payload to a message queue |
 | `QUERY_NODES`     | Returns all nodes matching the given routing query. This is intended to help with debugging, and SHOULD NOT BE USED OTHERWISE |
 
 The inner payloads for these events are as follows:
