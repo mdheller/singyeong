@@ -190,6 +190,8 @@ clients must follow.
 | `UPDATE_METADATA` | Update metadata on the server. The inner payload should be a key-value mapping of metadata |
 | `SEND`            | Send a payload to a single client that matches the routing query |
 | `BROADCAST`       | Send a payload to all clients that match the routing query |
+| `REQUEST`         | Initiate a request-response with the target clients |
+| `RESPONSE`        | Respond to - or receive - a request-response |
 | `QUERY_NODES`     | Returns all nodes matching the given routing query. This is intended to help with debugging, and SHOULD NOT BE USED OTHERWISE |
 
 The inner payloads for these events are as follows:
@@ -245,6 +247,64 @@ When receiving:
 
 The main difference is the presence of the `target` field in the payload when
 sending a dispatch event. 
+
+### `REQUEST` / `RESPONSE`
+
+These behave similarly to `SEND` / `BROADCAST`. 
+
+#### `REQUEST` (send)
+
+```Javascript
+{
+  "nonce": "unique nonce",
+  // Routing query for finding receiving nodes
+  "target": "routing query goes here",
+  "payload": {
+    // Whatever data you want to pass goes here
+  }
+}
+```
+
+#### `REQUEST` (recv)
+
+```Javascript
+{
+  "nonce": "unique nonce",
+  "payload": {
+    // Whatever data you want to pass goes here
+  }
+}
+```
+
+#### `RESPONSE` (send)
+
+```Javascript
+{
+  "nonce": "unique nonce",
+  "payload": {
+    // Whatever data you want to pass goes here
+  }
+}
+```
+
+#### `RESPONSE` (recv)
+
+```Javascript
+{
+  "nonce": "unique nonce",
+  "payloads": [
+    {
+      // Whatever data you want to pass goes here
+    },
+    {
+      // Whatever data you want to pass goes here
+    },
+    {
+      // Whatever data you want to pass goes here
+    }
+  ]
+}
+```
 
 ### `QUERY_NODES`
 
